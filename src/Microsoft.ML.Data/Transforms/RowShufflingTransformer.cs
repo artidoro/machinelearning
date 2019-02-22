@@ -579,6 +579,7 @@ namespace Microsoft.ML.Transforms
                 try
                 {
                     int circularIndex = 0;
+                    Ch.Info("Entering the LoopProducerTask loop.");
                     for (; ; )
                     {
                         int requested = await _toProduce.ReceiveAsync();
@@ -586,6 +587,7 @@ namespace Microsoft.ML.Transforms
                         {
                             // We had some sort of early exit. Just go out, do not post even the
                             // sentinel to the consumer, as nothing will be consumed any more.
+                            Ch.Info("Exiting the LoopProducerTask: early exit.");
                             return;
                         }
                         Ch.Assert(requested >= _blockSize);
@@ -603,6 +605,7 @@ namespace Microsoft.ML.Transforms
                                 circularIndex = 0;
                         }
                         PostAssert(_toConsume, numRows);
+                        Ch.Info($"LoopProducerTask: postAssert toConsume {numRows}.");
                         if (numRows < requested)
                         {
                             // We've reached the end of the cursor. Send the sentinel, then exit.
@@ -610,6 +613,9 @@ namespace Microsoft.ML.Transforms
                             // (so that the sentinel is received, after the last Post).
                             if (numRows > 0)
                                 PostAssert(_toConsume, 0);
+                                Ch.Info($"LoopProducerTask loop: about to exit postAssert toConsume 0.");
+
+                            Ch.Info("Exiting the LoopProducerTask: end of cursor.");
                             return;
                         }
                     }
@@ -619,6 +625,7 @@ namespace Microsoft.ML.Transforms
                     _producerTaskException = ex;
                     // Send the sentinel in this case as well, the field will be checked.
                     PostAssert(_toConsume, 0);
+                    Ch.Info("Exception caught: postAssert toConsume 0.");
                 }
             }
 
@@ -637,13 +644,17 @@ namespace Microsoft.ML.Transforms
                     // It is possible for int values to be sent beyond the
                     // end of the sentinel, but we suppose this is irrelevant.
                     PostAssert(_toProduce, _deadCount);
+                    Ch.Info($"MoveNextCore loop: postAssert toProduce {_deadCount}");
                     _deadCount = 0;
                 }
 
+                Ch.Info("MoveNextCore loop: entering loop.");
                 while (_liveCount < _poolRows && !_doneConsuming)
                 {
+                    Ch.Info("MoveNextCore loop: waiting to receive.");
                     // We are under capacity. Try to get some more.
                     int got = _toConsume.Receive();
+                    Ch.Info($"MoveNextCore loop: toConsume received {got}.");
                     if (got == 0)
                     {
                         // We've reached the end sentinel. There's no reason
@@ -652,10 +663,12 @@ namespace Microsoft.ML.Transforms
                         if (_producerTaskException != null)
                             throw Ch.Except(_producerTaskException, "Shuffle input cursor reader failed with an exception");
                         _doneConsuming = true;
+                        Ch.Info("MoveNextCore loop: done consuming.");
                         break;
                     }
                     _liveCount += got;
                 }
+                Ch.Info($"MoveNextCore loop: exiting loop liveCount {_liveCount}.");
                 if (_liveCount == 0)
                     return false;
                 int circularSwapIndex = (_rand.Next(Math.Min(_liveCount, _poolRows)) + _circularIndex) % _pipeIndices.Length;

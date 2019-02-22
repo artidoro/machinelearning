@@ -113,6 +113,9 @@ namespace Microsoft.ML
             if (log == null)
                 return;
 
+            if (source.FullName.StartsWith("Cache"))
+                return;
+
             var msg = $"[Source={source.FullName}, Kind={message.Kind}] {message.Message}";
 
             log(this, new LoggingEventArgs(msg));
