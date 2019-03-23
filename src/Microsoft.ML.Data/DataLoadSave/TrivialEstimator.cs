@@ -13,7 +13,7 @@ namespace Microsoft.ML.Data
     /// Concrete implementations still have to provide the schema propagation mechanism, since
     /// there is no easy way to infer it from the transformer.
     /// </summary>
-    public abstract class TrivialEstimator<TTransformer> : IEstimator<TTransformer>
+    public abstract class TrivialEstimator<TTransformer> : IEstimator<TTransformer>, ICanSaveModel
         where TTransformer : class, ITransformer
     {
         [BestFriend]
@@ -42,5 +42,9 @@ namespace Microsoft.ML.Data
             => Transformer.Transform(input);
 
         public abstract SchemaShape GetOutputSchema(SchemaShape inputSchema);
+
+        // REVIEW: Possibly? Not sure if we want this to be saveable... IF we want to keep need to test
+        void ICanSaveModel.Save(ModelSaveContext ctx)
+            => Transformer.Save(ctx);
     }
 }
