@@ -29,7 +29,7 @@ namespace Microsoft.ML
         }
 
         /// <summary>
-        /// Save a transformer model and the loader used to create its input data to the stream.
+        /// Save a transformer model and the loader used to create its input data to a stream.
         /// </summary>
         /// <param name="model">The trained model to be saved. Note that this can be <see langword="null"/>, as a shorthand
         /// for an empty transformer chain. Upon loading with <see cref="LoadWithDataLoader(Stream, out IDataLoader{IMultiStreamSource})"/>
@@ -55,7 +55,7 @@ namespace Microsoft.ML
         }
 
         /// <summary>
-        /// Save a transformer model and the loader used to create its input data to the file.
+        /// Save a transformer model and the loader used to create its input data to a file.
         /// </summary>
         /// <param name="model">The trained model to be saved. Note that this can be <see langword="null"/>, as a shorthand
         /// for an empty transformer chain. Upon loading with <see cref="LoadWithDataLoader(Stream, out IDataLoader{IMultiStreamSource})"/>
@@ -73,7 +73,7 @@ namespace Microsoft.ML
         }
 
         /// <summary>
-        /// Save a transformer model and the schema of the data that was used to train it to the stream.
+        /// Save a transformer model and the schema of the data that was used to train it to a stream.
         /// </summary>
         /// <param name="model">The trained model to be saved. Note that this can be <see langword="null"/>, as a shorthand
         /// for an empty transformer chain. Upon loading with <see cref="Load(Stream, out DataViewSchema)"/> the returned value will
@@ -292,7 +292,7 @@ namespace Microsoft.ML
         }
 
         /// <summary>
-        /// Create a prediction engine for one-time prediction.
+        /// Create a <see cref=" PredictionEngine{TSrc, TDst}"/> for one-time prediction.
         /// </summary>
         /// <typeparam name="TSrc">The class that defines the input data.</typeparam>
         /// <typeparam name="TDst">The class that defines the output data.</typeparam>
@@ -317,6 +317,13 @@ namespace Microsoft.ML
             return transformer.CreatePredictionEngine<TSrc, TDst>(_env, ignoreMissingColumns, inputSchemaDefinition, outputSchemaDefinition);
         }
 
+        /// <summary>
+        /// Create a <see cref=" PredictionEngine{TSrc, TDst}"/> for one-time prediction.
+        /// </summary>
+        /// <typeparam name="TSrc">The class that defines the input data.</typeparam>
+        /// <typeparam name="TDst">The class that defines the output data.</typeparam>
+        /// <param name="transformer">The transformer to use for prediction.</param>
+        /// <param name="inputSchema">Input schema of the data.</param>
         public PredictionEngine<TSrc, TDst> CreatePredictionEngine<TSrc, TDst>(ITransformer transformer, DataViewSchema inputSchema)
             where TSrc : class
             where TDst : class, new()

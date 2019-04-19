@@ -56,6 +56,14 @@ namespace Microsoft.ML
         }
     }
 
+    /// <summary>
+    /// A class that runs the previously trained model (and the preceding transform pipeline) on the
+    /// in-memory data, one example at a time.
+    /// This can also be used with trained pipelines that do not end with a predictor: in this case, the
+    /// 'prediction' will be just the outcome of all the transformations.
+    /// </summary>
+    /// <typeparam name="TSrc">The user-defined type that holds the example.</typeparam>
+    /// <typeparam name="TDst">The user-defined type that holds the prediction.</typeparam>
     public sealed class PredictionEngine<TSrc, TDst> : PredictionEngineBase<TSrc, TDst>
        where TSrc : class
        where TDst : class, new()

@@ -13,7 +13,7 @@ namespace Microsoft.ML
     internal static class PredictionEngineExtensions
     {
         /// <summary>
-        /// Create a prediction engine for one-time prediction.
+        /// Create a <see cref="PredictionEngine{TSrc, TDst}"/> for one-time prediction.
         /// </summary>
         /// <typeparam name="TSrc">The class that defines the input data.</typeparam>
         /// <typeparam name="TDst">The class that defines the output data.</typeparam>
