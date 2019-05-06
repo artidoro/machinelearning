@@ -8,7 +8,7 @@ using Microsoft.ML.Runtime;
 
 namespace Microsoft.ML.Data
 {
-    /// <summary>
+     /// <summary>
     /// Represents a chain (potentially empty) of estimators that end with a <typeparamref name="TLastTransformer"/>.
     /// If the chain is empty, <typeparamref name="TLastTransformer"/> is always <see cref="ITransformer"/>.
     /// </summary>
