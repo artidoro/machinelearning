@@ -25,20 +25,14 @@ namespace Microsoft.ML.Data
             _transformerChain = transformerChain;
         }
 
-        /// <summary>
-        /// Create an empty estimator chain.
-        /// </summary>
         public TrivialEstimatorChain()
         {
-            _host = null;
-            _estimatorChain = new EstimatorChain<TLastTransformer>();
-            _transformerChain = new TransformerChain<TLastTransformer>();
+
         }
 
-        public TrivialEstimatorChain<TNewTrans> Append<TTrivialEstimator, TNewTrans>(TTrivialEstimator estimator, TransformerScope scope = TransformerScope.Everything)
-            where TTrivialEstimator : class, IEstimator<TNewTrans>, TNewTrans
-            where TNewTrans : class, ITransformer
-            => new TrivialEstimatorChain<TNewTrans>(_host, _estimatorChain.Append(estimator, scope), _transformerChain.Append(estimator as TNewTrans));
+        public TrivialEstimatorChain<ITransformer> Append<TTrivialEstimator>(TTrivialEstimator estimator, TransformerScope scope = TransformerScope.Everything)
+            where TTrivialEstimator : class, IEstimator<ITransformer>, ITransformer
+            => new TrivialEstimatorChain<ITransformer>(_host, _estimatorChain.Append(estimator, scope), _transformerChain.Append(estimator as ITransformer));
 
         public EstimatorChain<TNewTrans> Append<TNewTrans>(IEstimator<TNewTrans> estimator, TransformerScope scope = TransformerScope.Everything)
             where TNewTrans : class, ITransformer
@@ -68,13 +62,13 @@ namespace Microsoft.ML.Data
         public SchemaShape GetOutputSchema(SchemaShape inputSchema)
             => _estimatorChain.GetOutputSchema(inputSchema);
 
-        bool ITransformer.IsRowToRowMapper => ((ITransformer)_transformerChain).IsRowToRowMapper;
-
-        DataViewSchema ITransformer.GetOutputSchema(DataViewSchema inputSchema)
+        public DataViewSchema GetOutputSchema(DataViewSchema inputSchema)
             => _transformerChain.GetOutputSchema(inputSchema);
 
+        bool ITransformer.IsRowToRowMapper => ((ITransformer)_transformerChain).IsRowToRowMapper;
+
         IRowToRowMapper ITransformer.GetRowToRowMapper(DataViewSchema inputSchema)
-            => ((ITransformer)_transformerChain).GetRowToRowMapper(inputSchema);
+           => ((ITransformer)_transformerChain).GetRowToRowMapper(inputSchema);
 
         void ICanSaveModel.Save(ModelSaveContext ctx)
             => ((ITransformer)_transformerChain).Save(ctx);

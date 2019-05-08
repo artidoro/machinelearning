@@ -94,9 +94,9 @@ namespace Microsoft.ML.Tests
             // Define same TrivialEstimatorChain by appending two TrivialEstimators.
             var trivialEstimatorChain = mlContext.Transforms.CopyColumns("CopyAge", "Age")
                 .Append(mlContext.Transforms.CopyColumns("CopyCategory", "Category"));
-            
+
             // Check that this is TrivialEstimatorChain and that I can transform data directly.
-            Assert.True(trivialEstimatorChain is TrivialEstimatorChain<ColumnCopyingTransformer>);
+            Assert.True(trivialEstimatorChain is TrivialEstimatorChain<ITransformer>);
             var transformedData = trivialEstimatorChain.Transform(data);
 
             // Append a non trivial estimator to the chain.

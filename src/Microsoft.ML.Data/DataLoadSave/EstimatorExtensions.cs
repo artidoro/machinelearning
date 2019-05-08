@@ -58,6 +58,23 @@ namespace Microsoft.ML
         }
 
         /// <summary>
+        /// Create a new estimator chain, by appending another estimator to the end of this estimator.
+        /// </summary>
+        public static EstimatorChain<ITransformer> Append<TTrivialEstimator>(
+            this IEstimator<ITransformer> start, TTrivialEstimator estimator,
+            TransformerScope scope = TransformerScope.Everything)
+            where TTrivialEstimator : class, IEstimator<ITransformer>, ITransformer
+        {
+            Contracts.CheckValue(start, nameof(start));
+            Contracts.CheckValue(estimator, nameof(estimator));
+
+            if (start is EstimatorChain<ITransformer> est)
+                return est.Append(estimator, scope);
+
+            return new EstimatorChain<ITransformer>().Append(start).Append(estimator, scope);
+        }
+
+        /// <summary>
         /// Append a 'caching checkpoint' to the estimator chain. This will ensure that the downstream estimators will be trained against
         /// cached data. It is helpful to have a caching checkpoint before trainers that take multiple data passes.
         /// </summary>
@@ -73,12 +90,11 @@ namespace Microsoft.ML
         /// <summary>
         /// Create a new estimator chain, by appending another estimator to the end of this estimator.
         /// </summary>
-        public static TrivialEstimatorChain<TTrans> Append<TTrivialEstimatorStart, TTrivialEstimatorNew, TTrans>(
+        public static TrivialEstimatorChain<ITransformer> Append<TTrivialEstimatorStart, TTrivialEstimatorNew>(
             this TTrivialEstimatorStart start, TTrivialEstimatorNew estimator,
             TransformerScope scope = TransformerScope.Everything)
             where TTrivialEstimatorStart : class, IEstimator<ITransformer>, ITransformer
-            where TTrivialEstimatorNew : class, IEstimator<TTrans>, TTrans
-            where TTrans : class, ITransformer
+            where TTrivialEstimatorNew : class, IEstimator<ITransformer>, ITransformer
         {
             Contracts.CheckValue(start, nameof(start));
             Contracts.CheckValue(estimator, nameof(estimator));
@@ -113,9 +129,8 @@ namespace Microsoft.ML
         /// </summary>
         /// <param name="start">The starting estimator</param>
         /// <param name="env">The host environment to use for caching.</param>
-        public static TrivialEstimatorChain<TTrans> AppendCacheCheckpoint<TTrivialEstimator, TTrans>(this TTrivialEstimator start, IHostEnvironment env)
-            where TTrivialEstimator : class, IEstimator<TTrans>, TTrans
-            where TTrans : class, ITransformer
+        public static TrivialEstimatorChain<ITransformer> AppendCacheCheckpoint<TTrivialEstimator>(this TTrivialEstimator start, IHostEnvironment env)
+            where TTrivialEstimator : class, IEstimator<ITransformer>, ITransformer
         {
             Contracts.CheckValue(start, nameof(start));
             return new TrivialEstimatorChain<ITransformer>().Append(start).AppendCacheCheckpoint(env);
