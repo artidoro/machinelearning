@@ -17,10 +17,15 @@ namespace Microsoft.ML.Tests.TrainerEstimators
         {
             var dataPath = GetDataPath("breast-cancer.txt");
 
-            var data = TextLoaderStatic.CreateLoader(Env, ctx => (Label: ctx.LoadFloat(0), Features: ctx.LoadFloat(1, 10)))
-                .Load(dataPath).Cache();
+            var data = ML.Data.LoadFromTextFile(dataPath, new[] {
+                new TextLoader.Column("Label", DataKind.Single, 0),
+                new TextLoader.Column("Features", DataKind.Single, 1, 10)
+            });
+
+            data = ML.Data.Cache(data);
+
             var binaryData = ML.Transforms.Conversion.ConvertType("Label", outputKind: DataKind.Boolean)
-                .Fit(data.AsDynamic).Transform(data.AsDynamic);
+                .Fit(data).Transform(data);
 
             var binaryTrainer = ML.BinaryClassification.Trainers.SdcaLogisticRegression(
                 new SdcaLogisticRegressionBinaryTrainer.Options { ConvergenceTolerance = 1e-2f, MaximumNumberOfIterations = 10 });
@@ -33,9 +38,9 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             var regressionTrainer = ML.Regression.Trainers.Sdca(
                 new SdcaRegressionTrainer.Options { ConvergenceTolerance = 1e-2f, MaximumNumberOfIterations = 10 });
 
-            TestEstimatorCore(regressionTrainer, data.AsDynamic);
-            var mcData = ML.Transforms.Conversion.MapValueToKey("Label").Fit(data.AsDynamic).Transform(data.AsDynamic);
-            
+            TestEstimatorCore(regressionTrainer, data);
+            var mcData = ML.Transforms.Conversion.MapValueToKey("Label").Fit(data).Transform(data);
+
             var mcTrainer = ML.MulticlassClassification.Trainers.SdcaMaximumEntropy(
                 new SdcaMaximumEntropyMulticlassTrainer.Options { ConvergenceTolerance = 1e-2f, MaximumNumberOfIterations = 10 });
             TestEstimatorCore(mcTrainer, mcData);
@@ -53,7 +58,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             // Generate C# objects as training examples.
             var rawData = SamplesUtils.DatasetUtils.GenerateBinaryLabelFloatFeatureVectorFloatWeightSamples(100);
 
-            // Create a new context for ML.NET operations. It can be used for exception tracking and logging, 
+            // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.
             var mlContext = new MLContext();
 
@@ -85,7 +90,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             var first = rawPrediction.First();
             // This is a positive example.
             Assert.True(first.Label);
-            // Positive example should have non-negative score. 
+            // Positive example should have non-negative score.
             Assert.True(first.Score > 0);
             // Positive example should have high probability of belonging the positive class.
             Assert.InRange(first.Probability, 0.8, 1);
@@ -97,7 +102,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             // Generate C# objects as training examples.
             var rawData = SamplesUtils.DatasetUtils.GenerateBinaryLabelFloatFeatureVectorFloatWeightSamples(100);
 
-            // Create a new context for ML.NET operations. It can be used for exception tracking and logging, 
+            // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.
             var mlContext = new MLContext(0);
 
@@ -151,7 +156,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             // Generate C# objects as training examples.
             var rawData = SamplesUtils.DatasetUtils.GenerateBinaryLabelFloatFeatureVectorFloatWeightSamples(100);
 
-            // Create a new context for ML.NET operations. It can be used for exception tracking and logging, 
+            // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.
             var mlContext = new MLContext(0);
 
@@ -208,7 +213,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             // Generate C# objects as training examples.
             var rawData = SamplesUtils.DatasetUtils.GenerateBinaryLabelFloatFeatureVectorFloatWeightSamples(100);
 
-            // Create a new context for ML.NET operations. It can be used for exception tracking and logging, 
+            // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.
             var mlContext = new MLContext();
 
@@ -240,7 +245,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             var first = rawPrediction.First();
             // This is a positive example.
             Assert.True(first.Label);
-            // Positive example should have non-negative score. 
+            // Positive example should have non-negative score.
             Assert.True(first.Score > 0);
         }
 
@@ -250,7 +255,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             // Generate C# objects as training examples.
             var rawData = SamplesUtils.DatasetUtils.GenerateFloatLabelFloatFeatureVectorSamples(512);
 
-            // Create a new context for ML.NET operations. It can be used for exception tracking and logging, 
+            // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.
             var mlContext = new MLContext();
 
@@ -285,7 +290,7 @@ namespace Microsoft.ML.Tests.TrainerEstimators
             // Generate C# objects as training examples.
             var rawData = SamplesUtils.DatasetUtils.GenerateFloatLabelFloatFeatureVectorSamples(512);
 
-            // Create a new context for ML.NET operations. It can be used for exception tracking and logging, 
+            // Create a new context for ML.NET operations. It can be used for exception tracking and logging,
             // as a catalog of available operations and as the source of randomness.
             var mlContext = new MLContext();
 

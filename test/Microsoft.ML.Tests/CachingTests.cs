@@ -77,25 +77,5 @@ namespace Microsoft.ML.Tests
             data.GetColumn<float[]>(data.Schema["Features"]).ToArray();
             Assert.True(src.All(x => x.AccessCount == 1));
         }
-
-        [Fact]
-        public void StaticDataCacheTest()
-        {
-            var env = new MLContext(seed: 0);
-            var dataPath = GetDataPath(TestDatasets.breastCancer.trainFilename);
-            var dataSource = new MultiFileSource(dataPath);
-
-            var reader = TextLoaderStatic.CreateLoader(env,
-                c => (label: c.LoadBool(0), features: c.LoadFloat(1, 9)));
-
-            var data = reader.Load(dataSource);
-
-            var cachedData = data.Cache();
-
-            // Before caching, we are not able to shuffle the data.
-            Assert.True(data.AsDynamic.CanShuffle == false);
-            // After caching, we are able to shuffle the data!
-            Assert.True(cachedData.AsDynamic.CanShuffle == true);
-        }
     }
 }

@@ -18,7 +18,6 @@ namespace Microsoft.ML.CodeAnalyzer.Tests.Helpers
         internal static readonly MetadataReference MSDataDataViewReference = RefFromType<IDataView>();
         internal static readonly MetadataReference MLNetCoreReference = RefFromType<IHostEnvironment>();
         internal static readonly MetadataReference MLNetDataReference = RefFromType<MLContext>();
-        internal static readonly MetadataReference MLNetStaticPipeReference = RefFromType<CategoricalHashStaticExtensions.OneHotHashVectorOutputKind>();
 
         internal static MetadataReference RefFromType<TType>()
             => MetadataReference.CreateFromFile(typeof(TType).Assembly.Location);
