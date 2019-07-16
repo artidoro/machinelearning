@@ -4,7 +4,6 @@
 
 using Microsoft.ML;
 using Microsoft.ML.Trainers;
-using Microsoft.ML.StaticPipe;
 using Xunit;
 using Microsoft.ML.Data;
 

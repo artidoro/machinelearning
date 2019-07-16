@@ -5,14 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.ML;
 using Microsoft.ML.Data;
 using Microsoft.ML.Model;
 using Microsoft.ML.RunTests;
-using Microsoft.ML.StaticPipe;
 using Microsoft.ML.TestFramework.Attributes;
-using Microsoft.ML.Transforms.Onnx;
-using Microsoft.ML.Transforms.StaticPipe;
 using Xunit;
 using Xunit.Abstractions;
 

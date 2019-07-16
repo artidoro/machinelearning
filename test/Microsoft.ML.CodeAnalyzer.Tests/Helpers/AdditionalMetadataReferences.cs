@@ -6,7 +6,6 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.ML.Runtime;
-using Microsoft.ML.StaticPipe;
 
 namespace Microsoft.ML.CodeAnalyzer.Tests.Helpers
 {
