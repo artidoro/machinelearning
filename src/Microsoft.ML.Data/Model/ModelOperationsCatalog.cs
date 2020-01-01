@@ -333,5 +333,25 @@ namespace Microsoft.ML
             return transformer.CreatePredictionEngine<TSrc, TDst>(_env, false,
                 DataViewConstructionUtils.GetSchemaDefinition<TSrc>(_env, inputSchema));
         }
+
+        // REVIEW: Do we want this? If so need to test
+        public PredictionEngine<TSrc, TDst> CreatePredictionEngine<TSrc, TDst, TTrans>(TrivialEstimator<TTrans> trivialEstimator,
+            bool ignoreMissingColumns = true, SchemaDefinition inputSchemaDefinition = null, SchemaDefinition outputSchemaDefinition = null)
+            where TSrc : class
+            where TDst : class, new()
+            where TTrans : class, ITransformer
+        {
+            return trivialEstimator.Transformer.CreatePredictionEngine<TSrc, TDst>(_env, ignoreMissingColumns, inputSchemaDefinition, outputSchemaDefinition);
+        }
+
+        // REVIEW: Do we want this? If so need to test
+        public PredictionEngine<TSrc, TDst> CreatePredictionEngine<TSrc, TDst, TTrans>(TrivialEstimator<TTrans> trivialEstimator, DataViewSchema inputSchema)
+            where TSrc : class
+            where TDst : class, new()
+            where TTrans : class, ITransformer
+        {
+            return trivialEstimator.Transformer.CreatePredictionEngine<TSrc, TDst>(_env, false,
+                DataViewConstructionUtils.GetSchemaDefinition<TSrc>(_env, inputSchema));
+        }
     }
 }
