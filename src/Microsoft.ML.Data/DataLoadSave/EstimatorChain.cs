@@ -8,6 +8,83 @@ using Microsoft.ML.Runtime;
 
 namespace Microsoft.ML.Data
 {
+    public sealed class TrivialEstimatorChain<TLastTransformer> : ITrivialEstimator<TransformerChain<TLastTransformer>>
+        where TLastTransformer : class, ITransformer
+    {
+        // Host is not null iff there is any 'true' values in _needCacheAfter (in this case, we need to create an instance of
+        // CacheDataView.
+        private readonly IHost _host;
+        private readonly EstimatorChain<TLastTransformer> _estimatorChain;
+        private readonly TransformerChain<TLastTransformer> _tranformerChain;
+        private readonly bool[] _needCacheAfter;
+        public IEstimator<TLastTransformer> LastEstimator => _estimatorChain.LastEstimator;
+
+        public bool IsRowToRowMapper => ((ITransformer)_tranformerChain).IsRowToRowMapper;
+
+        private TrivialEstimatorChain(IHostEnvironment env, EstimatorChain<TLastTransformer> estimatorChain, TransformerChain<TLastTransformer> transformerChain, bool[] needCacheAfter)
+        {
+            _estimatorChain = estimatorChain;
+            _tranformerChain = transformerChain;
+            _needCacheAfter = needCacheAfter ?? new bool[0];
+        }
+
+        /// <summary>
+        /// Create an empty estimator chain.
+        /// </summary>
+        public TrivialEstimatorChain()
+        {
+            _host = null;
+            _estimatorChain = new EstimatorChain<TLastTransformer>();
+            _needCacheAfter = new bool[0];
+        }
+
+        public TransformerChain<TLastTransformer> Fit(IDataView input)
+            => _estimatorChain.Fit(input);
+
+        public IDataView Transform(IDataView input)
+            => Fit(input).Transform(input);
+
+        public SchemaShape GetOutputSchema(SchemaShape inputSchema)
+            => _estimatorChain.GetOutputSchema(inputSchema);
+
+        public TrivialEstimatorChain<TNewTrans> Append<TNewTrans>(ITrivialEstimator<TNewTrans> estimator, TransformerScope scope = TransformerScope.Everything)
+            where TNewTrans : class, ITransformer
+            => new TrivialEstimatorChain<TNewTrans>(_host, _estimatorChain.Append(estimator, scope), _tranformerChain.Append(((TNewTrans)estimator), scope), _needCacheAfter.AppendElement(false));
+
+        public EstimatorChain<TNewTrans> Append<TNewTrans>(IEstimator<TNewTrans> estimator, TransformerScope scope = TransformerScope.Everything)
+            where TNewTrans : class, ITransformer
+            => _estimatorChain.Append(estimator, scope);
+
+        /// <summary>
+        /// Append a 'caching checkpoint' to the estimator chain. This will ensure that the downstream estimators will be trained against
+        /// cached data. It is helpful to have a caching checkpoint before trainers that take multiple data passes.
+        /// </summary>
+        /// <param name="env">The host environment to use for caching.</param>
+        public TrivialEstimatorChain<TLastTransformer> AppendCacheCheckpoint(IHostEnvironment env)
+        {
+            Contracts.CheckValue(env, nameof(env));
+
+            if (((ITransformerChainAccessor)_tranformerChain).Transformers.Length == 0 || _needCacheAfter.Last())
+            {
+                // If there are no estimators, or if we already need to cache after this, we don't need to do anything else.
+                return this;
+            }
+
+            bool[] newNeedCache = _needCacheAfter.ToArray();
+            newNeedCache[newNeedCache.Length - 1] = true;
+            return new TrivialEstimatorChain<TLastTransformer>(env, _estimatorChain.AppendCacheCheckpoint(env), _tranformerChain, newNeedCache);
+        }
+
+        public DataViewSchema GetOutputSchema(DataViewSchema inputSchema)
+            => _tranformerChain.GetOutputSchema(inputSchema);
+
+        public IRowToRowMapper GetRowToRowMapper(DataViewSchema inputSchema)
+            => ((ITransformer)_tranformerChain).GetRowToRowMapper(inputSchema);
+
+        public void Save(ModelSaveContext ctx)
+            => ((ICanSaveModel)_tranformerChain).Save(ctx);
+    }
+
     /// <summary>
     /// Represents a chain (potentially empty) of estimators that end with a <typeparamref name="TLastTransformer"/>.
     /// If the chain is empty, <typeparamref name="TLastTransformer"/> is always <see cref="ITransformer"/>.
